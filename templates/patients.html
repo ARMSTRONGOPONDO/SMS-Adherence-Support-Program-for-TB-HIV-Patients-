@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Patients - SMS Adherence Support System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="bi bi-people"></i>
+                    Patients
+                </h1>
+                <a href="{{ url_for('add_patient') }}" class="btn btn-primary">
+                    <i class="bi bi-person-plus"></i>
+                    Add Patient
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    {% if patients %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Phone Number</th>
+                                        <th>Treatment Type</th>
+                                        <th>Language</th>
+                                        <th>Medication Time</th>
+                                        <th>Start Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for patient in patients %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ patient.name }}</strong><br>
+                                            <small class="text-muted">{{ patient.patient_id }}</small>
+                                        </td>
+                                        <td>{{ patient.phone_number }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'danger' if patient.treatment_type == 'TB' else 'warning' }}">
+                                                {{ patient.treatment_type }}
+                                            </span>
+                                        </td>
+                                        <td>{{ patient.language.title() }}</td>
+                                        <td>{{ patient.medication_time }}</td>
+                                        <td>{{ patient.start_date }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if patient.is_active else 'secondary' }}">
+                                                {{ 'Active' if patient.is_active else 'Inactive' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('patient_detail', patient_id=patient.patient_id) }}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i>
+                                                View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-people fs-1 text-muted"></i>
+                            <h4 class="text-muted mt-3">No patients registered yet</h4>
+                            <p class="text-muted">Start by adding your first patient to the system.</p>
+                            <a href="{{ url_for('add_patient') }}" class="btn btn-primary">
+                                <i class="bi bi-person-plus"></i>
+                                Add First Patient
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

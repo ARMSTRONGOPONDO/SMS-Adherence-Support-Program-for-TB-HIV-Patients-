@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SMS Adherence Support System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col">
+            <h1 class="mb-4">
+                <i class="bi bi-speedometer2"></i>
+                Dashboard
+            </h1>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-people-fill fs-1 text-primary"></i>
+                    <h3 class="mt-2">{{ active_patients }}</h3>
+                    <p class="text-muted">Active Patients</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-exclamation-triangle-fill fs-1 text-warning"></i>
+                    <h3 class="mt-2">{{ alerts|length }}</h3>
+                    <p class="text-muted">Active Alerts</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card border-success">
+                <div class="card-body text-center">
+                    <i class="bi bi-check-circle-fill fs-1 text-success"></i>
+                    <h3 class="mt-2">{{ response_stats.get('dose_taken', 0) }}</h3>
+                    <p class="text-muted">Doses Confirmed Today</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card border-info">
+                <div class="card-body text-center">
+                    <i class="bi bi-question-circle-fill fs-1 text-info"></i>
+                    <h3 class="mt-2">{{ response_stats.get('need_help', 0) }}</h3>
+                    <p class="text-muted">Help Requests Today</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Alerts -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Recent Alerts
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    {% if alerts %}
+                        {% for alert in alerts[:5] %}
+                        <div class="alert alert-{{ 'urgent' if alert.severity == 'urgent' else 'high' if alert.severity == 'high' else 'medium' }} mb-2" role="alert">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>{{ alert.name }}</strong><br>
+                                    <small>{{ alert.message }}</small><br>
+                                    <small class="text-muted">{{ alert.created_at }}</small>
+                                </div>
+                                <div>
+                                    <form method="post" action="{{ url_for('resolve_alert', alert_id=alert.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if alerts|length > 5 %}
+                        <div class="text-center">
+                            <a href="{{ url_for('alerts') }}" class="btn btn-outline-warning">
+                                View All {{ alerts|length }} Alerts
+                            </a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted text-center">No active alerts</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Messages -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-chat-dots"></i>
+                        Recent Messages
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    {% if recent_messages %}
+                        {% for message in recent_messages %}
+                        <div class="border-bottom pb-2 mb-2">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ message.name }}</strong>
+                                <span class="badge bg-{{ 'success' if message.status == 'sent' else 'danger' if message.status == 'failed' else 'secondary' }}">
+                                    {{ message.status }}
+                                </span>
+                            </div>
+                            <small class="text-muted">{{ message.message_type.title() }}</small><br>
+                            <small class="text-truncate d-block">{{ message.content[:50] }}{% if message.content|length > 50 %}...{% endif %}</small>
+                            <small class="text-muted">{{ message.created_at }}</small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">No recent messages</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-lightning"></i>
+                        Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('add_patient') }}" class="btn btn-primary btn-lg d-block">
+                                <i class="bi bi-person-plus"></i><br>
+                                Add Patient
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('send_message') }}" class="btn btn-info btn-lg d-block">
+                                <i class="bi bi-chat-dots"></i><br>
+                                Send Message
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('patients') }}" class="btn btn-success btn-lg d-block">
+                                <i class="bi bi-people"></i><br>
+                                View Patients
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('alerts') }}" class="btn btn-warning btn-lg d-block">
+                                <i class="bi bi-exclamation-triangle"></i><br>
+                                View Alerts
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
