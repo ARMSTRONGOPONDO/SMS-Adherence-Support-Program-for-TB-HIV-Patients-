@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Alerts - SMS Adherence Support System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col">
+            <h1 class="mb-4">
+                <i class="bi bi-exclamation-triangle"></i>
+                Active Alerts
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            {% if alerts %}
+                {% for alert in alerts %}
+                <div class="card mb-3">
+                    <div class="card-header bg-{{ 'danger' if alert.severity == 'urgent' else 'warning' if alert.severity == 'high' else 'info' }}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">
+                                    <i class="bi bi-{{ 'exclamation-triangle-fill' if alert.severity == 'urgent' else 'exclamation-circle-fill' if alert.severity == 'high' else 'info-circle-fill' }}"></i>
+                                    {{ alert.alert_type.replace('_', ' ').title() }}
+                                    <span class="badge bg-{{ 'danger' if alert.severity == 'urgent' else 'warning' if alert.severity == 'high' else 'info' }}">
+                                        {{ alert.severity.title() }}
+                                    </span>
+                                </h6>
+                            </div>
+                            <div>
+                                <form method="post" action="{{ url_for('resolve_alert', alert_id=alert.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        <i class="bi bi-check-circle"></i>
+                                        Mark Resolved
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <p class="mb-2">{{ alert.message }}</p>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> {{ alert.created_at }}
+                                </small>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="patient-info">
+                                    <strong>{{ alert.name }}</strong><br>
+                                    <small class="text-muted">{{ alert.phone_number }}</small><br>
+                                    <a href="{{ url_for('patient_detail', patient_id=alert.patient_id) }}" 
+                                       class="btn btn-sm btn-outline-primary mt-2">
+                                        <i class="bi bi-person"></i>
+                                        View Patient
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-check-circle fs-1 text-success"></i>
+                        <h4 class="text-success mt-3">No Active Alerts</h4>
+                        <p class="text-muted">Great! All patients are following their medication schedule.</p>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left"></i>
+                            Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

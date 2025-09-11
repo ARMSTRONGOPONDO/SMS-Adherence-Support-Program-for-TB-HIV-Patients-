@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Add Patient - SMS Adherence Support System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="bi bi-person-plus"></i>
+                        Add New Patient
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Patient Name *</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                    <small class="form-text text-muted">Full name of the patient</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="phone_number" class="form-label">Phone Number *</label>
+                                    <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                           placeholder="+254700000000" required>
+                                    <small class="form-text text-muted">International format (+254...)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="treatment_type" class="form-label">Treatment Type *</label>
+                                    <select class="form-control" id="treatment_type" name="treatment_type" required>
+                                        <option value="">Select Treatment</option>
+                                        <option value="TB">Tuberculosis (TB)</option>
+                                        <option value="HIV">HIV</option>
+                                        <option value="TB-HIV">TB & HIV Co-infection</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="language" class="form-label">Preferred Language</label>
+                                    <select class="form-control" id="language" name="language">
+                                        {% for lang in languages %}
+                                        <option value="{{ lang }}" {{ 'selected' if lang == 'swahili' else '' }}>
+                                            {{ lang.title() }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <small class="form-text text-muted">Language for SMS messages</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="medication_time" class="form-label">Daily Medication Time</label>
+                                    <input type="time" class="form-control" id="medication_time" name="medication_time" 
+                                           value="08:00">
+                                    <small class="form-text text-muted">When patient should take daily medication</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="start_date" class="form-label">Treatment Start Date *</label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="end_date" class="form-label">Expected End Date</label>
+                                    <input type="date" class="form-control" id="end_date" name="end_date">
+                                    <small class="form-text text-muted">Leave blank for ongoing treatment (HIV)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="caregiver_phone" class="form-label">Caregiver Phone (Optional)</label>
+                                    <input type="tel" class="form-control" id="caregiver_phone" name="caregiver_phone" 
+                                           placeholder="+254700000000">
+                                    <small class="form-text text-muted">Emergency contact for alerts</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">Privacy Notice</h6>
+                                <small class="text-muted">
+                                    All SMS messages will be sent discreetly without mentioning specific medical conditions. 
+                                    Patient information is stored securely and only accessible to authorized healthcare staff.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('patients') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i>
+                                Back to Patients
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-person-plus"></i>
+                                Add Patient
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Set default start date to today
+    document.getElementById('start_date').valueAsDate = new Date();
+    
+    // Auto-calculate end date based on treatment type
+    document.getElementById('treatment_type').addEventListener('change', function() {
+        const startDate = document.getElementById('start_date');
+        const endDate = document.getElementById('end_date');
+        
+        if (this.value === 'TB' && startDate.value) {
+            // TB treatment is typically 6-9 months
+            const start = new Date(startDate.value);
+            const end = new Date(start);
+            end.setMonth(end.getMonth() + 6);
+            endDate.value = end.toISOString().split('T')[0];
+        } else if (this.value === 'HIV') {
+            // HIV treatment is lifelong
+            endDate.value = '';
+        } else if (this.value === 'TB-HIV' && startDate.value) {
+            // TB component ends in 6-9 months, HIV continues
+            const start = new Date(startDate.value);
+            const end = new Date(start);
+            end.setMonth(end.getMonth() + 9);
+            endDate.value = end.toISOString().split('T')[0];
+        }
+    });
+</script>
+{% endblock %}
